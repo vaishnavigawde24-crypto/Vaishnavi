@@ -1,68 +1,92 @@
-import math
+import in streamlit
 
-def calculator():
-    print("\n===== SCIENTIFIC CALCULATOR =====")
-    print("""
-    1. Addition
-    2. Subtraction
-    3. Multiplication
-    4. Division
-    5. Power (a^b)
-    6. Square Root
-    7. Sine (degrees)
-    8. Cosine (degrees)
-    9. Tangent (degrees)
-    10. Log10
-    11. Natural Log (ln)
-    12. Factorial
-    """)
+# Base class for a character in the game (could be Dragon or King)
+class Character:
+    def __init__(self, name, health, power, defense, attack_type):
+        self.name = name
+        self.health = health
+        self.power = power
+        self.defense = defense
+        self.attack_type = attack_type  # 'melee', 'ranged', or 'magic'
+        self.level = 1
+        self.experience = 0
 
-    choice = int(input("Enter your choice: "))
+    def attack(self, target):
+        damage = self.calculate_damage(target)
+        target.health -= damage
+        print(f"{self.name} attacks {target.name} for {damage} damage!")
 
-    if choice in [1, 2, 3, 4, 5]:
-        a = float(input("Enter first number: "))
-        b = float(input("Enter second number: "))
+    def calculate_damage(self, target):
+        base_damage = self.power
+        # Calculate damage modifiers based on attack type and target defense
+        if self.attack_type == 'melee':
+            return max(0, base_damage - target.defense)
+        elif self.attack_type == 'ranged':
+            return max(0, base_damage - target.defense // 2)
+        elif self.attack_type == 'magic':
+            return max(0, base_damage - target.defense // 3)
+        return base_damage
 
-        if choice == 1:
-            result = a + b
-        elif choice == 2:
-            result = a - b
-        elif choice == 3:
-            result = a * b
-        elif choice == 4:
-            result = "Error: Division by zero" if b == 0 else a / b
-        elif choice == 5:
-            result = a ** b
+    def level_up(self):
+        self.level += 1
+        self.health += 20
+        self.power += 5
+        self.defense += 2
+        self.experience = 0
+        print(f"{self.name} has leveled up to level {self.level}!")
 
-    elif choice == 6:
-        a = float(input("Enter number: "))
-        result = math.sqrt(a)
+    def gain_experience(self, amount):
+        self.experience += amount
+        if self.experience >= 100:  # For simplicity, level up every 100 XP
+            self.level_up()
 
-    elif choice in [7, 8, 9]:
-        angle = float(input("Enter angle in degrees: "))
-        if choice == 7:
-            result = math.sin(math.radians(angle))
-        elif choice == 8:
-            result = math.cos(math.radians(angle))
-        elif choice == 9:
-            result = math.tan(math.radians(angle))
+# Dragon subclass
+class Dragon(Character):
+    def __init__(self, name, element, health, power, defense):
+        super().__init__(name, health, power, defense, attack_type='magic')
+        self.element = element
 
-    elif choice == 10:
-        a = float(input("Enter number: "))
-        result = math.log10(a)
+    def breathe_fire(self, target):
+        damage = random.randint(10, 30) + self.power
+        target.health -= damage
+        print(f"{self.name} breathes fire at {target.name}, causing {damage} damage!")
 
-    elif choice == 11:
-        a = float(input("Enter number: "))
-        result = math.log(a)
+# King subclass
+class King(Character):
+    def __init__(self, name, kingdom, health, power, defense):
+        super().__init__(name, health, power, defense, attack_type='melee')
+        self.kingdom = kingdom
 
-    elif choice == 12:
-        a = int(input("Enter integer: "))
-        result = math.factorial(a)
+    def swing_sword(self, target):
+        damage = random.randint(5, 20) + self.power
+        target.health -= damage
+        print(f"{self.name} swings his sword at {target.name}, causing {damage} damage!")
 
-    else:
-        result = "Invalid choice"
+# Battle function to simulate combat between two characters
+def battle(character1, character2):
+    print(f"\nBattle between {character1.name} and {character2.name}!\n")
+    while character1.health > 0 and character2.health > 0:
+        character1.attack(character2)
+        if character2.health <= 0:
+            print(f"{character2.name} has been defeated!")
+            character1.gain_experience(50)
+            break
 
-    print("Result:", result)
+        character2.attack(character1)
+        if character1.health <= 0:
+            print(f"{character1.name} has been defeated!")
+            character2.gain_experience(50)
+            break
 
-# Start the calculator
-calculator()
+    print(f"\nFinal Health: {character1.name}: {character1.health}, {character2.name}: {character2.health}\n")
+
+# Example usage
+dragon = Dragon(name="Flare", element="Fire", health=100, power=20, defense=10)
+king = King(name="King Arthur", kingdom="Camelot", health=120, power=15, defense=15)
+
+# Simulate a battle
+battle(dragon, king)
+
+# Output the final stats after battle
+print(f"{dragon.name} - Health: {dragon.health}, Power: {dragon.power}, Level: {dragon.level}")
+print(f"{king.name} - Health: {king.health}, Power: {king.power}, Level: {king.level}")
